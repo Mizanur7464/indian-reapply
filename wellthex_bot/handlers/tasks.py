@@ -4,7 +4,7 @@ from database.db import init_user_tasks, set_task_completed, set_twitter_usernam
 from handlers.wallet import start_wallet
 from telegram.ext import filters
 from telegram.error import BadRequest
-from config import TWITTER_LINK, INSTAGRAM_LINK, TELEGRAM_GROUP_LINK, TELEGRAM_GROUP_ID, YOUTUBE_LINK, TOKEN_NAME
+from config import TWITTER_LINK, INSTAGRAM_LINK, TELEGRAM_GROUP_LINK, TELEGRAM_GROUP_ID, YOUTUBE_LINK, TOKEN_NAME, TELEGRAM_CHANNEL_LINK, TELEGRAM_CHANNEL_ID
 
 # Task states
 TWITTER, INSTAGRAM, TELEGRAM, YOUTUBE = range(4)
@@ -30,9 +30,15 @@ TASKS = [
     },
     {
         'name': 'telegram',
-        'text': '✅ Join Telegram & Add 5 users',
+        'text': '✅ Join Telegram Group & Add 5 users',
         'url': TELEGRAM_GROUP_LINK,
         'state': TELEGRAM
+    },
+    {
+        'name': 'telegram_channel',
+        'text': '✅ Join Telegram Channel',
+        'url': TELEGRAM_CHANNEL_LINK,
+        'state': 10  # New unique state for channel join
     },
     {
         'name': 'youtube',
@@ -42,12 +48,7 @@ TASKS = [
     }
 ]
 
-async def check_telegram_membership(user_id, bot):
-    try:
-        member = await bot.get_chat_member(TELEGRAM_GROUP_ID, user_id)
-        return member.status in ['member', 'administrator', 'creator']
-    except BadRequest:
-        return False
+TELEGRAM_CHANNEL = 10  # New state for channel join
 
 async def count_user_invites(user_id, bot):
     # TODO: Implement real invite count logic if possible
@@ -86,32 +87,47 @@ async def show_task(update, context, task_idx):
     await message.reply_text(f"{task['text']}", reply_markup=reply_markup)
     return task['state']
 
+async def check_telegram_membership(user_id, bot):
+    try:
+        member = await bot.get_chat_member(TELEGRAM_GROUP_ID, user_id)
+        return member.status in ['member', 'administrator', 'creator']
+    except BadRequest:
+        return False
+
+async def check_channel_membership(user_id, bot):
+    try:
+        member = await bot.get_chat_member(TELEGRAM_CHANNEL_ID, user_id)
+        return member.status in ['member', 'administrator', 'creator']
+    except BadRequest:
+        return False
+
 async def done_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("[DEBUG] done_task called")
     query = update.callback_query
-    # await query.answer()  # Removed to allow alert popups to work
     user_id = query.from_user.id
     if query.data.startswith('done_'):
         idx = int(query.data.split('_')[1])
         print("[DEBUG] idx:", idx)
         if idx == 0:
-            # Twitter task: ask for username
             await query.message.reply_text("Please enter your twitter username with '@'.  (Mandatory)")
             return TWITTER_USERNAME
         elif idx == 1:
-            # Instagram task: ask for username
             await query.message.reply_text("Please enter your Instagram username with '@'.  (Mandatory)")
             return INSTAGRAM_USERNAME
-        elif idx == 2:  # Telegram task
+        elif idx == 2:  # Telegram group task
             in_group = await check_telegram_membership(user_id, context.bot)
             print("[DEBUG] in_group:", in_group)
             if not in_group:
                 print("[DEBUG] User not in group")
                 await query.answer("❌ Sorry, please join our telegram group.", show_alert=True)
                 return TELEGRAM
-            invited = await count_user_invites(user_id, context.bot)
-            print("[DEBUG] invited:", invited)
-            # Placeholder: do not show warning, just proceed
+        elif idx == 3:  # Telegram channel task
+            in_channel = await check_channel_membership(user_id, context.bot)
+            print("[DEBUG] in_channel:", in_channel)
+            if not in_channel:
+                print("[DEBUG] User not in channel")
+                await query.answer("❌ Sorry, please join our telegram channel.", show_alert=True)
+                return TELEGRAM_CHANNEL
         set_task_completed(user_id, TASKS[idx]['name'])
         try:
             await query.message.delete()
@@ -151,6 +167,7 @@ def get_tasks_handler():
             TWITTER: [CallbackQueryHandler(done_task)],
             INSTAGRAM: [CallbackQueryHandler(done_task)],
             TELEGRAM: [CallbackQueryHandler(done_task)],
+            TELEGRAM_CHANNEL: [CallbackQueryHandler(done_task)],
             YOUTUBE: [CallbackQueryHandler(done_task)],
             TWITTER_USERNAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_twitter_username)],
             INSTAGRAM_USERNAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_instagram_username)],

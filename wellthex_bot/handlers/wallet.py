@@ -62,7 +62,7 @@ async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     # All checks passed
     keyboard = [
-        [InlineKeyboardButton("\ud83d\udcca Dashboard", callback_data="dashboard")]
+        [InlineKeyboardButton("\U0001F381 Claim Airdrop", callback_data="claim_airdrop")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(

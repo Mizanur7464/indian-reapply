@@ -28,53 +28,27 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     add_user(user_id=user_id, username=user.username, status='new', referrer_id=referrer_id)
     # Custom welcome message (use direct emoji)
     msg = (
-        f"👋 Dear {user.first_name} Welcome to WellthhEx Airdrop Bot\n\n"
-        f"Join Our <a href='{TELEGRAM_GROUP_LINK}'>Telegram Group</a>\n"
-        f"Join Our <a href='https://t.me/wellthexairdrop'>Telegram Channel</a>\n"
-        f"Follow our <a href='{TWITTER_LINK}'>Twitter page</a>\n"
-        f"Follow our <a href='{INSTAGRAM_LINK}'>Instagram</a>\n"
-        f"Subscribe to our <a href='{YOUTUBE_LINK}'>YouTube Channel</a>\n\n"
+        f"👋 Dear {user.first_name} Welcome to WellthEx Airdrop Bot\n\n"
+        f"Join Our Telegram Group\n"
+        f"Join Our Telegram Channel\n"
+        f"Follow our Twitter page\n"
+        f"Follow our Instagram\n"
+        f"Subscribe to our YouTube Channel\n\n"
         f"✅ Click \"Check\" button to verify your entry and join the Airdrop successfully."
     )
     keyboard = [[InlineKeyboardButton("Check", callback_data="check_entry")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(msg, reply_markup=reply_markup, parse_mode='HTML', disable_web_page_preview=True)
+    await update.message.reply_text(msg, reply_markup=reply_markup, parse_mode=None, disable_web_page_preview=True)
     return ConversationHandler.END
 
 async def show_captcha(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     user_id = user.id
-    # Check if user is a member of the Telegram group
-    try:
-        member = await context.bot.get_chat_member(TELEGRAM_GROUP_ID, user_id)
-        if member.status not in ["member", "administrator", "creator"]:
-            raise Exception("Not a member")
-    except Exception:
-        # Delete the previous message (the Check button message)
-        try:
-            await update.callback_query.message.delete()
-        except Exception:
-            pass
-        # Resend the welcome message with Check button (refresh)
-        msg = (
-            f"👋 Dear {user.first_name} Welcome to WellthhEx Airdrop Bot\n\n"
-            f"Join Our <a href='{TELEGRAM_GROUP_LINK}'>Telegram Group</a>\n"
-            f"Join Our <a href='https://t.me/wellthexairdrop'>Telegram Channel</a>\n"
-            f"Follow our <a href='{TWITTER_LINK}'>Twitter page</a>\n"
-            f"Follow our <a href='{INSTAGRAM_LINK}'>Instagram</a>\n"
-            f"Subscribe to our <a href='{YOUTUBE_LINK}'>YouTube Channel</a>\n\n"
-            f"✅ Click \"Check\" button to verify your entry and join the Airdrop successfully."
-        )
-        keyboard = [[InlineKeyboardButton("Check", callback_data="check_entry")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.callback_query.message.chat.send_message(msg, reply_markup=reply_markup, parse_mode='HTML', disable_web_page_preview=True)
-        await update.callback_query.answer()
-        return ConversationHandler.END
-    # If member, show captcha
+    # Directly show captcha without group membership check
     question, answer = generate_math_captcha()
     captcha_answers[user_id] = answer
     sent_msg = await update.callback_query.message.reply_text(
-        f"👋 Welcome to WellthEx Airdrop!\n\nPlease solve this captcha to continue:\n\n{question}"
+        f"\U0001F44B Welcome to WellthEx Airdrop!\n\nPlease solve this captcha to continue:\n\n{question}"
     )
     # Store message IDs for deletion
     context.user_data['captcha_msg_id'] = sent_msg.message_id

@@ -138,4 +138,21 @@ def set_instagram_username(user_id, username):
     cur = conn.cursor()
     cur.execute('UPDATE users SET instagram = ? WHERE user_id = ?', (username, user_id))
     conn.commit()
+    conn.close()
+
+def get_airdrop_claimed(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT airdrop_claimed FROM users WHERE user_id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        return row['airdrop_claimed']
+    return 0
+
+def set_airdrop_claimed(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('UPDATE users SET airdrop_claimed = 1 WHERE user_id = ?', (user_id,))
+    conn.commit()
     conn.close() 

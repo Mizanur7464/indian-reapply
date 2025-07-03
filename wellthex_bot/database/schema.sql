@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
     email_verified INTEGER DEFAULT 0,
     referrer_id INTEGER,
     wtx INTEGER DEFAULT 0,
-    wallet TEXT
+    wallet TEXT,
+    airdrop_claimed INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS user_tasks (
@@ -14,5 +15,6 @@ CREATE TABLE IF NOT EXISTS user_tasks (
     twitter INTEGER DEFAULT 0,
     instagram INTEGER DEFAULT 0,
     telegram INTEGER DEFAULT 0,
+    telegram_channel INTEGER DEFAULT 0,
     youtube INTEGER DEFAULT 0
 ); 

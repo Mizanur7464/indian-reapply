@@ -1,38 +1,37 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
-from database.db import get_user_info, get_user_tasks, get_referral_count
+from database.db import get_user_info, get_user_tasks, get_referral_count, get_airdrop_claimed, set_airdrop_claimed
 from config import TOKEN_NAME
 
-# Dashboard handler
-async def dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE, welcome_back=False):
+# Claim Reward handler (was dashboard)
+async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE, welcome_back=False):
     user_id = update.effective_user.id
     info = get_user_info(user_id)
     tasks = get_user_tasks(user_id)
     referrals = get_referral_count(user_id)
-    # Right message object
+    claimed = get_airdrop_claimed(user_id)
     if update.message:
         message = update.message
     elif hasattr(update, "callback_query") and update.callback_query:
         message = update.callback_query.message
     else:
         return
-
     twitter = info['username'] or 'N/A'
     instagram = info.get('instagram') if info and 'instagram' in info else 'N/A'
     email = info.get('email') if info and 'email' in info else 'N/A'
-    # User's balance is the total earned tokens (base + referral bonus)
     wtx_balance = info['wtx'] or 0
     referral_link = f"https://t.me/{context.bot.username}?start={user_id}"
-
+    referral_token = referrals * 20
+    all_tasks_complete = tasks and all(tasks.get(t, 0) == 1 for t in tasks)
     if welcome_back:
         greeting = "Hi, welcome back!"
     else:
-        greeting = "🎉Congratulations! You have successfully completed airdrop tasks."
-
+        greeting = "\U0001F389Congratulations! You have successfully completed airdrop tasks."
     msg = (
         f"{greeting}\n\n"
+        f"<b>Airdrop Token Balance:</b> <code>{wtx_balance} {TOKEN_NAME}</code>\n"
+        f"<b>Referral Token Balance:</b> <code>{referral_token} {TOKEN_NAME}</code>\n"
         f"<b>Total Referrals:</b> <code>{referrals}</code>\n"
-        f"<b>Total Referral Bonus Earned:</b> <code>{referrals * 20} {TOKEN_NAME}</code>\n"
         f"Earn 20 {TOKEN_NAME} for every friend you invite!\n\n"
         f"Your Provided Data:\n"
         f"    Email: <code>{email}</code>\n"
@@ -40,26 +39,44 @@ async def dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE, welcome_
         f"    Instagram: @{instagram}\n"
         f"    ETH or BSC Address:\n"
         f"    <code>{info['wallet'] or 'N/A'}</code>\n\n"
-        f"🔗 referral link: <code>{referral_link}</code>"
+        f"\U0001F517 referral link: <code>{referral_link}</code>"
     )
-    keyboard = [
-        [InlineKeyboardButton("\ud83d\udd04 Refresh", callback_data="refresh_dashboard")]
-    ]
+    keyboard = []
+    keyboard.append([InlineKeyboardButton("\U0001F4B0 BUY WTX (Presale)", callback_data="buy_wtx")])
+    keyboard.append([InlineKeyboardButton("\U0001F504 Refresh", callback_data="refresh_claim_reward")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     await message.reply_text(msg, parse_mode='HTML', reply_markup=reply_markup)
 
-async def refresh_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def claim_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer("Dashboard refreshed!", show_alert=False)
+    user_id = query.from_user.id
+    claimed = get_airdrop_claimed(user_id)
+    if claimed:
+        await query.answer("You have already claimed your airdrop!", show_alert=True)
+        return
+    set_airdrop_claimed(user_id)
+    await query.answer("Airdrop claimed!", show_alert=True)
+    await claim_reward(update, context, welcome_back=True)
+
+async def buy_wtx(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    await query.message.reply_text("Presale purchase coming soon! Stay tuned.")
+
+async def refresh_claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer("Reward summary refreshed!", show_alert=False)
     try:
         await query.message.delete()
     except Exception:
         pass
-    await dashboard(update, context, welcome_back=True)
+    await claim_reward(update, context, welcome_back=True)
 
-# Remove profile handler and button logic; only keep dashboard and its handler
+# Remove profile handler and button logic; only keep claim_reward and its handler
 profile_handlers = [
-    CommandHandler('dashboard', dashboard),
-    CallbackQueryHandler(dashboard, pattern='^dashboard$'),
-    CallbackQueryHandler(refresh_dashboard, pattern='^refresh_dashboard$'),
+    CommandHandler('claim_reward', claim_reward),
+    CallbackQueryHandler(claim_reward, pattern='^claim_reward$'),
+    CallbackQueryHandler(claim_airdrop, pattern='^claim_airdrop$'),
+    CallbackQueryHandler(buy_wtx, pattern='^buy_wtx$'),
+    CallbackQueryHandler(refresh_claim_reward, pattern='^refresh_claim_reward$'),
 ] 
