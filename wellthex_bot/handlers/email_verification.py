@@ -69,11 +69,11 @@ async def check_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Referral bonus
         referrer_id = get_referrer_id(user_id)
         if referrer_id:
-            add_wtx(referrer_id, 20)
+            add_wtx(referrer_id, 100)
             try:
                 await context.bot.send_message(
                     referrer_id,
-                    "\ud83c\udf89 Congratulations! Your referral just got verified. You earned 20 WTX."
+                    "\ud83c\udf89 Congratulations! Your referral just got verified. You earned 100 WTX."
                 )
             except Exception:
                 pass

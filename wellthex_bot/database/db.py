@@ -37,12 +37,12 @@ def set_task_completed(user_id, task):
 def get_next_incomplete_task(user_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('''SELECT twitter, instagram, telegram, youtube FROM user_tasks WHERE user_id = ?''', (user_id,))
+    cur.execute('''SELECT twitter, instagram, telegram, telegram_channel, youtube FROM user_tasks WHERE user_id = ?''', (user_id,))
     row = cur.fetchone()
     conn.close()
     if not row:
         return 'twitter'
-    for task in ['twitter', 'instagram', 'telegram', 'youtube']:
+    for task in ['twitter', 'instagram', 'telegram', 'telegram_channel', 'youtube']:
         if row[task] == 0:
             return task
     return None
@@ -91,7 +91,7 @@ def get_user_status(user_id):
 def get_user_tasks(user_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT twitter, instagram, telegram, youtube FROM user_tasks WHERE user_id = ?', (user_id,))
+    cur.execute('SELECT twitter, instagram, telegram, telegram_channel, youtube FROM user_tasks WHERE user_id = ?', (user_id,))
     row = cur.fetchone()
     conn.close()
     if row:
@@ -99,6 +99,7 @@ def get_user_tasks(user_id):
             'twitter': row['twitter'],
             'instagram': row['instagram'],
             'telegram': row['telegram'],
+            'telegram_channel': row['telegram_channel'],
             'youtube': row['youtube']
         }
     return None
@@ -106,7 +107,7 @@ def get_user_tasks(user_id):
 def get_user_info(user_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT email, wallet, wtx, username FROM users WHERE user_id = ?', (user_id,))
+    cur.execute('SELECT email, wallet, wtx, username, instagram FROM users WHERE user_id = ?', (user_id,))
     row = cur.fetchone()
     conn.close()
     if row:
@@ -114,7 +115,8 @@ def get_user_info(user_id):
             'email': row['email'],
             'wallet': row['wallet'],
             'wtx': row['wtx'],
-            'username': row['username']
+            'username': row['username'],
+            'instagram': row['instagram']
         }
     return None
 

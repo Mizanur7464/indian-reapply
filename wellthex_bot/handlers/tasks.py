@@ -129,10 +129,6 @@ async def done_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await query.answer("❌ Sorry, please join our telegram channel.", show_alert=True)
                 return TELEGRAM_CHANNEL
         set_task_completed(user_id, TASKS[idx]['name'])
-        try:
-            await query.message.delete()
-        except Exception:
-            pass
         return await show_task(update, context, idx + 1)
     await query.message.reply_text('Unknown task.')
     return ConversationHandler.END

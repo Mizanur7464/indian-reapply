@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
-from database.db import get_user_info, get_user_tasks, get_referral_count, get_airdrop_claimed, set_airdrop_claimed
+from database.db import get_user_info, get_user_tasks, get_referral_count, get_airdrop_claimed, set_airdrop_claimed, add_wtx
 from config import TOKEN_NAME
 
 # Claim Reward handler (was dashboard)
@@ -16,12 +16,17 @@ async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE, welco
         message = update.callback_query.message
     else:
         return
-    twitter = info['username'] or 'N/A'
-    instagram = info.get('instagram') if info and 'instagram' in info else 'N/A'
+    # Ensure only one '@' for Twitter and Instagram usernames
+    def format_username(username):
+        if not username or username == 'N/A':
+            return 'N/A'
+        return username if username.startswith('@') else f'@{username}'
+    twitter = format_username(info['username'])
+    instagram = format_username(info.get('instagram')) if info and 'instagram' in info else 'N/A'
     email = info.get('email') if info and 'email' in info else 'N/A'
     wtx_balance = info['wtx'] or 0
     referral_link = f"https://t.me/{context.bot.username}?start={user_id}"
-    referral_token = referrals * 20
+    referral_token = referrals * 100
     all_tasks_complete = tasks and all(tasks.get(t, 0) == 1 for t in tasks)
     if welcome_back:
         greeting = "Hi, welcome back!"
@@ -32,14 +37,14 @@ async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE, welco
         f"<b>Airdrop Token Balance:</b> <code>{wtx_balance} {TOKEN_NAME}</code>\n"
         f"<b>Referral Token Balance:</b> <code>{referral_token} {TOKEN_NAME}</code>\n"
         f"<b>Total Referrals:</b> <code>{referrals}</code>\n"
-        f"Earn 20 {TOKEN_NAME} for every friend you invite!\n\n"
+        f"Earn 100 {TOKEN_NAME} for every friend you invite!\n\n"
         f"Your Provided Data:\n"
         f"    Email: <code>{email}</code>\n"
-        f"    Twitter: @{twitter}\n"
-        f"    Instagram: @{instagram}\n"
-        f"    ETH or BSC Address:\n"
+        f"    Twitter: {twitter}\n"
+        f"    Instagram: {instagram}\n"
+        f"    BSC Address:\n"
         f"    <code>{info['wallet'] or 'N/A'}</code>\n\n"
-        f"\U0001F517 referral link: <code>{referral_link}</code>"
+        f"\U0001F517<code>referral link:</code> <a href='{referral_link}'>{referral_link}</a>"
     )
     keyboard = []
     keyboard.append([InlineKeyboardButton("\U0001F4B0 BUY WTX (Presale)", callback_data="buy_wtx")])
@@ -52,9 +57,10 @@ async def claim_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
     claimed = get_airdrop_claimed(user_id)
     if claimed:
-        await query.answer("You have already claimed your airdrop!", show_alert=True)
+        await claim_reward(update, context, welcome_back=True)
         return
     set_airdrop_claimed(user_id)
+    add_wtx(user_id, 100)
     await query.answer("Airdrop claimed!", show_alert=True)
     await claim_reward(update, context, welcome_back=True)
 
