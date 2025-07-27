@@ -8,7 +8,7 @@ import random
 ASK_EMAIL, VERIFY_EMAIL, ENTER_CODE = range(3)
 
 MAILEROO_API_KEY = "f6f09935ea0b26b171acd758ca9ffd501f6236e58cbfe533528546e4cd1dd57a"
-MAILEROO_SENDER = "no-reply@wellthex.com"
+MAILEROO_SENDER = "no-reply@ghosty.com"
 
 # Start email verification: show button
 async def start_email_verification(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -39,7 +39,7 @@ async def verify_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = {
         "from": MAILEROO_SENDER,
         "to": email,
-        "subject": "Your WellthEx Verification Code",
+        "subject": "Your Ghosty Verification Code",
         "html": f"<b>Your verification code is: {code}</b>"
     }
     headers = {

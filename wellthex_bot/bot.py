@@ -30,7 +30,7 @@ def main():
     for handler in admin_handlers:
         app.add_handler(handler)
 
-    print("WellthEx Airdrop Bot is running...")
+    print("Ghosty Airdrop Bot is running...")
     app.run_polling()
 
 if __name__ == "__main__":

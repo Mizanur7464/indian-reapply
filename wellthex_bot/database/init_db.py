@@ -1,8 +1,8 @@
 import sqlite3
 import os
 
-SCHEMA_PATH = "wellthex_bot/database/schema.sql"
-DB_PATH = "wellthex_bot/airdrop.db"
+SCHEMA_PATH = "ghosty_bot/database/schema.sql"
+DB_PATH = "ghosty_bot/airdrop.db"
 
 def ensure_telegram_channel_column():
     conn = sqlite3.connect(DB_PATH)

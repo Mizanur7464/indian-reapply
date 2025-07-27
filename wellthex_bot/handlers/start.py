@@ -28,7 +28,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     add_user(user_id=user_id, username=user.username, status='new', referrer_id=referrer_id)
     # Custom welcome message (use direct emoji)
     msg = (
-        f"👋 Dear {user.first_name} Welcome to WellthEx Airdrop Bot\n\n"
+        f"👋 Dear {user.first_name} Welcome to Ghosty Airdrop Bot\n\n"
         f"Join Our Telegram Group\n"
         f"Join Our Telegram Channel\n"
         f"Follow our Twitter page\n"
@@ -48,7 +48,7 @@ async def show_captcha(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question, answer = generate_math_captcha()
     captcha_answers[user_id] = answer
     sent_msg = await update.callback_query.message.reply_text(
-        f"\U0001F44B Welcome to WellthEx Airdrop!\n\nPlease solve this captcha to continue:\n\n{question}"
+        f"\U0001F44B Welcome to Ghosty Airdrop!\n\nPlease solve this captcha to continue:\n\n{question}"
     )
     # Store message IDs for deletion
     context.user_data['captcha_msg_id'] = sent_msg.message_id
