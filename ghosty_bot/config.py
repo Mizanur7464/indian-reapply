@@ -15,7 +15,7 @@ TELEGRAM_CHANNEL_LINK = os.getenv("TELEGRAM_CHANNEL_LINK")
 TELEGRAM_CHANNEL_ID = int(os.getenv("TELEGRAM_CHANNEL_ID", "0"))
 
 # Token and project info
-TOKEN_NAME = os.getenv("TOKEN_NAME", "WTX")
+TOKEN_NAME = os.getenv("TOKEN_NAME", "GHOSTY")
 REWARD_LINK = os.getenv("REWARD_LINK")
 
 # Add more config variables as needed 

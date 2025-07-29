@@ -47,7 +47,7 @@ async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE, welco
         f"\U0001F517<code>referral link:</code> <a href='{referral_link}'>{referral_link}</a>"
     )
     keyboard = []
-    keyboard.append([InlineKeyboardButton("\U0001F4B0 BUY WTX (Presale)", callback_data="buy_wtx")])
+    keyboard.append([InlineKeyboardButton("💰 BUY GHOSTY (Presale)", callback_data="buy_wtx")])
     keyboard.append([InlineKeyboardButton("\U0001F504 Refresh", callback_data="refresh_claim_reward")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     await message.reply_text(msg, parse_mode='HTML', reply_markup=reply_markup)
