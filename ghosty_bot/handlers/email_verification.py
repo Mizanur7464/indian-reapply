@@ -7,8 +7,8 @@ import random
 
 ASK_EMAIL, VERIFY_EMAIL, ENTER_CODE = range(3)
 
-MAILEROO_API_KEY = "f6f09935ea0b26b171acd758ca9ffd501f6236e58cbfe533528546e4cd1dd57a"
-MAILEROO_SENDER = "no-reply@ghosty.com"
+MAILEROO_API_KEY = "568018071eeba30cebfbf7120b62a0bc176bb0c4f7baa5bd4f3cb836de45ccba"
+MAILEROO_SENDER = "noreply@ghostyphantom.com"
 
 # Start email verification: show button
 async def start_email_verification(update: Update, context: ContextTypes.DEFAULT_TYPE):
