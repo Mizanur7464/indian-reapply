@@ -26,7 +26,7 @@ async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE, welco
     email = info.get('email') if info and 'email' in info else 'N/A'
     wtx_balance = info['wtx'] or 0
     referral_link = f"https://t.me/{context.bot.username}?start={user_id}"
-    referral_token = referrals * 100
+    referral_token = referrals * 500
     all_tasks_complete = tasks and all(tasks.get(t, 0) == 1 for t in tasks)
     if welcome_back:
         greeting = "Hi, welcome back!"
@@ -37,7 +37,7 @@ async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE, welco
         f"<b>Airdrop Token Balance:</b> <code>{wtx_balance} {TOKEN_NAME}</code>\n"
         f"<b>Referral Token Balance:</b> <code>{referral_token} {TOKEN_NAME}</code>\n"
         f"<b>Total Referrals:</b> <code>{referrals}</code>\n"
-        f"Earn 100 {TOKEN_NAME} for every friend you invite!\n\n"
+        f"Earn 500 {TOKEN_NAME} for every friend you invite!\n\n"
         f"Your Provided Data:\n"
         f"    Email: <code>{email}</code>\n"
         f"    Twitter: {twitter}\n"
@@ -60,7 +60,7 @@ async def claim_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await claim_reward(update, context, welcome_back=True)
         return
     set_airdrop_claimed(user_id)
-    add_wtx(user_id, 100)
+    add_wtx(user_id, 500)
     await query.answer("Airdrop claimed!", show_alert=True)
     await claim_reward(update, context, welcome_back=True)
 
