@@ -67,7 +67,27 @@ async def claim_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def buy_wtx(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await query.message.reply_text("Presale purchase coming soon! Stay tuned.")
+    
+    # Calculate countdown timer (7 days from a fixed launch date)
+    import datetime
+    now = datetime.datetime.now()
+    # Set fixed target date (change this to your actual launch date)
+    target_date = datetime.datetime(2025, 8, 10, 12, 0, 0)  # January 15, 2025 at 12:00 PM
+    time_left = target_date - now
+    
+    days = time_left.days
+    hours = time_left.seconds // 3600
+    minutes = (time_left.seconds % 3600) // 60
+    seconds = time_left.seconds % 60
+    
+    timer_msg = (
+        f"$GHOSTY Trading Starts in\n\n"
+        f"⏰ {days} days {hours} hours {minutes} minutes {seconds} seconds\n\n"
+        f"Just setup now\n"
+        f"We will let you know when we are live"
+    )
+    
+    await query.message.reply_text(timer_msg)
 
 async def refresh_claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query

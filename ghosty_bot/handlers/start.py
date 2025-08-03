@@ -26,19 +26,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
     # Save user to DB with status 'new' and optional referrer_id
     add_user(user_id=user_id, username=user.username, status='new', referrer_id=referrer_id)
-    # Custom welcome message (use direct emoji)
+    # Custom welcome message with image
     msg = (
-        f"👋 Dear {user.first_name} Welcome to Ghosty Airdrop Bot\n\n"
-        f"Join Our Telegram Group\n"
-        f"Join Our Telegram Channel\n"
-        f"Follow our Twitter page\n"
-        f"Follow our Instagram\n"
-        f"Subscribe to our YouTube Channel\n\n"
+        f"🎉 Welcome to the Ghosty Airdrop! 👻💸\n"
+        f"You've just entered the most hyped memecoin airdrop of the season!\n\n"
+        f"🔥 Get 500 $GHOSTY just for joining!\n"
+        f"💥 Earn 500 $GHOSTY for every friend you refer!\n\n"
+        f"✅ Complete simple social media tasks to become eligible.\n"
+        f"🚀 Let's make history like $SHIBA, $BONK, and $WIF — Ghosty is Phantom's own baby!\n\n"
+        f"🌐 Official Website: https://ghostyphantom.com\n\n"
         f"✅ Click \"Check\" button to verify your entry and join the Airdrop successfully."
     )
     keyboard = [[InlineKeyboardButton("Check", callback_data="check_entry")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(msg, reply_markup=reply_markup, parse_mode=None, disable_web_page_preview=True)
+    
+    # Send image with caption
+    with open('data/logo.jpg', 'rb') as photo:
+        await update.message.reply_photo(
+            photo=photo,
+            caption=msg,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
+        )
     return ConversationHandler.END
 
 async def show_captcha(update: Update, context: ContextTypes.DEFAULT_TYPE):

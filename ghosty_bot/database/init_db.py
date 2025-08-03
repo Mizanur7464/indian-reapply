@@ -34,24 +34,22 @@ def ensure_airdrop_claimed_column():
     conn.close()
 
 def init_db():
-    if not os.path.exists(DB_PATH):
-        with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
-            schema = f.read()
-        conn = sqlite3.connect(DB_PATH)
-        conn.executescript(schema)
-        # Ensure 'instagram' column exists
-        try:
-            conn.execute('ALTER TABLE users ADD COLUMN instagram TEXT;')
-        except sqlite3.OperationalError:
-            # Column already exists
-            pass
-        conn.commit()
-        conn.close()
-        print("Database initialized!")
-    else:
-        print("Database already exists. Checking for schema updates...")
-        ensure_telegram_channel_column()
-        ensure_airdrop_claimed_column()
+    # Always create/update database
+    with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
+        schema = f.read()
+    conn = sqlite3.connect(DB_PATH)
+    conn.executescript(schema)
+    # Ensure 'instagram' column exists
+    try:
+        conn.execute('ALTER TABLE users ADD COLUMN instagram TEXT;')
+    except sqlite3.OperationalError:
+        # Column already exists
+        pass
+    conn.commit()
+    conn.close()
+    print("Database initialized!")
+    ensure_telegram_channel_column()
+    ensure_airdrop_claimed_column()
 
 if __name__ == "__main__":
     init_db() 

@@ -73,7 +73,7 @@ async def check_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 await context.bot.send_message(
                     referrer_id,
-                    "🎉 Congratulations! Your referral just got verified. You earned 500 GHOSTY."
+                    "🎉 You received 500 $GHOSTY for a new referral!"
                 )
             except Exception:
                 pass

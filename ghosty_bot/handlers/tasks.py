@@ -9,11 +9,7 @@ from config import TWITTER_LINK, INSTAGRAM_LINK, TELEGRAM_GROUP_LINK, TELEGRAM_G
 # Task states
 TWITTER, INSTAGRAM, TELEGRAM, YOUTUBE = range(4)
 
-# Add a new state for asking Twitter username
-TWITTER_USERNAME = 100
 
-# Add a new state for asking Instagram username
-INSTAGRAM_USERNAME = 101
 
 TASKS = [
     {
@@ -109,11 +105,11 @@ async def done_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
         idx = int(query.data.split('_')[1])
         print("[DEBUG] idx:", idx)
         if idx == 0:
-            await query.message.reply_text("Please enter your twitter username with '@'.  (Mandatory)")
-            return TWITTER_USERNAME
+            set_task_completed(user_id, TASKS[idx]['name'])
+            return await show_task(update, context, idx + 1)
         elif idx == 1:
-            await query.message.reply_text("Please enter your Instagram username with '@'.  (Mandatory)")
-            return INSTAGRAM_USERNAME
+            set_task_completed(user_id, TASKS[idx]['name'])
+            return await show_task(update, context, idx + 1)
         elif idx == 2:  # Telegram group task
             in_group = await check_telegram_membership(user_id, context.bot)
             print("[DEBUG] in_group:", in_group)
@@ -133,28 +129,7 @@ async def done_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.message.reply_text('Unknown task.')
     return ConversationHandler.END
 
-async def save_twitter_username(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    username = update.message.text.strip()
-    user_id = update.effective_user.id
-    if not username.startswith('@') or len(username) < 2:
-        await update.message.reply_text("❌ Invalid username. Please enter your twitter username with '@'.")
-        return TWITTER_USERNAME
-    set_twitter_username(user_id, username)
-    set_task_completed(user_id, 'twitter')
-    await update.message.reply_text("✅ Twitter username saved!")
-    return await show_task(update, context, 1)
 
-async def save_instagram_username(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    username = update.message.text.strip()
-    user_id = update.effective_user.id
-    if not username.startswith('@') or len(username) < 2:
-        await update.message.reply_text("❌ Invalid username. Please enter your Instagram username with '@'.")
-        return INSTAGRAM_USERNAME
-    # Save Instagram username to DB (implement set_instagram_username in db.py)
-    set_instagram_username(user_id, username)
-    set_task_completed(user_id, 'instagram')
-    await update.message.reply_text("✅ Instagram username saved!")
-    return await show_task(update, context, 2)
 
 def get_tasks_handler():
     return ConversationHandler(
@@ -165,8 +140,7 @@ def get_tasks_handler():
             TELEGRAM: [CallbackQueryHandler(done_task)],
             TELEGRAM_CHANNEL: [CallbackQueryHandler(done_task)],
             YOUTUBE: [CallbackQueryHandler(done_task)],
-            TWITTER_USERNAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_twitter_username)],
-            INSTAGRAM_USERNAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_instagram_username)],
+
         },
         fallbacks=[]
     ) 
