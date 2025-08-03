@@ -2,6 +2,43 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
 from database.db import get_user_info, get_user_tasks, get_referral_count, get_airdrop_claimed, set_airdrop_claimed, add_wtx
 from config import TOKEN_NAME
+import datetime
+
+# Calculate countdown timer function
+def get_timer_message():
+    now = datetime.datetime.now()
+    # Set fixed target date (change this to your actual launch date)
+    target_date = datetime.datetime(2025, 8, 11, 12, 0, 0)  # Aug 11, 2025 at 12:00 PM
+    time_left = target_date - now
+    
+    days = time_left.days
+    hours = time_left.seconds // 3600
+    minutes = (time_left.seconds % 3600) // 60
+    seconds = time_left.seconds % 60
+    
+    timer_msg = (
+        f"$GHOSTY Trading Starts in\n\n"
+        f"⏰ {days} days {hours} hours {minutes} minutes {seconds} seconds\n\n"
+        f"Just setup now\n"
+        f"We will let you know when we are live"
+    )
+    return timer_msg
+
+# Function to update timer message
+async def update_timer_message(
+    context: ContextTypes.DEFAULT_TYPE, 
+    chat_id: int, 
+    message_id: int
+):
+    try:
+        timer_msg = get_timer_message()
+        await context.bot.edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=timer_msg
+        )
+    except Exception as e:
+        print(f"Error updating timer: {e}")
 
 # Claim Reward handler (was dashboard)
 async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE, welcome_back=False):
@@ -47,10 +84,22 @@ async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE, welco
         f"\U0001F517<code>referral link:</code> <a href='{referral_link}'>{referral_link}</a>"
     )
     keyboard = []
-    keyboard.append([InlineKeyboardButton("💰 BUY GHOSTY (Presale)", callback_data="buy_wtx")])
+    keyboard.append([InlineKeyboardButton("💰 BUY GHOSTY", callback_data="buy_wtx")])
     keyboard.append([InlineKeyboardButton("\U0001F504 Refresh", callback_data="refresh_claim_reward")])
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await message.reply_text(msg, parse_mode='HTML', reply_markup=reply_markup)
+    
+    # Send main message with buttons
+    sent_message = await message.reply_text(msg, parse_mode='HTML', reply_markup=reply_markup)
+    
+    # Automatically send timer message below
+    timer_msg = get_timer_message()
+    timer_message = await message.reply_text(timer_msg)
+    
+    # Store timer message ID for potential updates
+    context.user_data['timer_message_id'] = timer_message.message_id
+    context.user_data['timer_chat_id'] = message.chat_id
+    
+    # Timer message stored in context for refresh functionality
 
 async def claim_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -68,30 +117,26 @@ async def buy_wtx(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
-    # Calculate countdown timer (7 days from a fixed launch date)
-    import datetime
-    now = datetime.datetime.now()
-    # Set fixed target date (change this to your actual launch date)
-    target_date = datetime.datetime(2025, 8, 10, 12, 0, 0)  # January 15, 2025 at 12:00 PM
-    time_left = target_date - now
-    
-    days = time_left.days
-    hours = time_left.seconds // 3600
-    minutes = (time_left.seconds % 3600) // 60
-    seconds = time_left.seconds % 60
-    
-    timer_msg = (
-        f"$GHOSTY Trading Starts in\n\n"
-        f"⏰ {days} days {hours} hours {minutes} minutes {seconds} seconds\n\n"
-        f"Just setup now\n"
-        f"We will let you know when we are live"
-    )
-    
-    await query.message.reply_text(timer_msg)
+    # Show the new message when button is clicked
+    await query.message.reply_text("Trading starts soon. Please Check timer above.")
 
 async def refresh_claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer("Reward summary refreshed!", show_alert=False)
+    
+    # Update timer if it exists
+    if ('timer_message_id' in context.user_data and 
+            'timer_chat_id' in context.user_data):
+        try:
+            await update_timer_message(
+                context, 
+                context.user_data['timer_chat_id'], 
+                context.user_data['timer_message_id']
+            )
+        except Exception as e:
+            print(f"Error updating timer on refresh: {e}")
+    
+    # Refresh the main message
     try:
         await query.message.delete()
     except Exception:
