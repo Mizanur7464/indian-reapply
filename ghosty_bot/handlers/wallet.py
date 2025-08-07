@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler, CallbackQueryHandler, MessageHandler, filters, CommandHandler
-from utils.validators import is_valid_wallet
+from utils.validators import is_valid_wallet, get_wallet_type
 from database.db import set_wallet, get_user_status, get_user_tasks
 from config import TOKEN_NAME, REWARD_LINK
 
@@ -15,30 +15,38 @@ async def start_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         return ConversationHandler.END
 
-    # Directly ask for wallet address, do not show button
-    await message.reply_text(
-        "Please enter your BEP20 wallet address (must start with 0x and be 42 characters long):"
-    )
+    # Ask for Solana wallet address
+    await message.reply_text("Please enter your Solana wallet address:")
     return ASK_WALLET
 
 async def ask_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await query.message.reply_text("Please enter your BEP20 wallet address (must start with 0x and be 42 characters long):")
+    await query.message.reply_text("Please enter your Solana wallet address:")
     return ASK_WALLET
 
 async def save_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     wallet = update.message.text.strip()
     print("[DEBUG] Entered save_wallet")
     print("[DEBUG] User entered wallet:", wallet)
+    
     if not is_valid_wallet(wallet):
         print("[DEBUG] Invalid wallet detected")
         await update.message.reply_text("❌ Invalid wallet address. Please try again:")
         return ASK_WALLET
+    
+    # Determine wallet type
+    wallet_type = get_wallet_type(wallet)
     user_id = update.effective_user.id
     print("[DEBUG] Saving wallet for user:", user_id)
+    print("[DEBUG] Wallet type:", wallet_type)
+    
     set_wallet(user_id, wallet)
     print("[DEBUG] Wallet saved, calling claim_reward")
+    
+    # Show success message
+    await update.message.reply_text("✅ Wallet connected successfully!")
+    
     # Directly call claim_reward without sending confirmation message
     await claim_reward(update, context)
     return ConversationHandler.END
@@ -58,7 +66,7 @@ async def claim_reward(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     # Check wallet connected
     if not user_status.get('wallet'):
-        await update.message.reply_text("❌ You must connect your BEP20 wallet before claiming your reward.")
+        await update.message.reply_text("❌ You must connect your Solana wallet before claiming your reward.")
         return
     # All checks passed
     keyboard = [

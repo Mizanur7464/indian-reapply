@@ -69,7 +69,7 @@ async def show_task(update, context, task_idx):
         keyboard = [[InlineKeyboardButton("\ud83d\udce5 Connect Wallet", callback_data="connect_wallet_start")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await message.reply_text(
-            "All tasks completed! Now connect your BEP20 wallet to receive your airdrop:",
+            "All tasks completed! Now connect your solana wallet to receive your airdrop:",
             reply_markup=reply_markup
         )
         return ConversationHandler.END
